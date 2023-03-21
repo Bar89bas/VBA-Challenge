@@ -1,0 +1,115 @@
+
+Option Explicit
+
+
+Sub TickerLoop2()
+    Const FIRST_DATA_ROW As Integer = 2
+    Const TICKER_COLUMN As Integer = 1
+    Const OPENING_PRICE_COLUMN As Integer = 3
+    Const CLOSING_PRICE_COLUMN As Integer = 6
+    Const STOCK_VOLUME_COLUMN As Integer = 7
+    Const COLOUR_GREEN = 4
+    Const COLOUR_RED = 3
+
+    
+    'Setting initial variable for holding a Ticker Name
+    Dim Ticker As String
+    'Setting initial variable for holding Yearly change
+    Dim Yearly_Change As Double
+    Dim Opening_Price As Double
+    Dim Closing_Price As Double
+    'Setting initial variable for holding Percentage Yearly Change
+    Dim Percentage_Change As Double
+    'Setting initial variable for holding Total Stock Volume
+    Dim Total_Stock_Volume As LongLong
+    Dim input_row As Long
+    ' Keep the track of the location for each Tricker name in the Summary Table
+    Dim Output_Row As Long
+    
+    Dim Greatest_Volume_Ticker As String
+    Dim Greatest_Volume_Value As LongLong
+    Dim Greates_Percentage_change As Double
+    
+    Dim Last_Input_Row As Long
+    Dim ws As Worksheet
+
+    For Each ws In Sheets
+        ws.Activate
+
+        Greatest_Volume_Value = 0
+        Range("I1").Value = "Ticker"
+        Range("J1").Value = "YearlyChange"
+        Range("K1").Value = "PercentageChange"
+        Range("L1").Value = "TotalStockVolume"
+        Cells(2, 15).Value = "Greatest%Increase"
+        Cells(3, 15).Value = "Greatest%Decrease"
+        Cells(4, 15).Value = "Greatest_Stock_Volume"
+        
+        Opening_Price = Cells(FIRST_DATA_ROW, OPENING_PRICE_COLUMN).Value
+        Last_Input_Row = Cells(Rows.Count, "A").End(xlUp).Row
+        Output_Row = FIRST_DATA_ROW
+
+        'For looping through the Ticker Name
+        For input_row = FIRST_DATA_ROW To Last_Input_Row
+            
+            'Everyrow
+            Ticker = Cells(input_row, TICKER_COLUMN).Value
+            Total_Stock_Volume = Total_Stock_Volume + Cells(input_row, STOCK_VOLUME_COLUMN).Value
+            
+            'Last row of ticker symbol
+            If Cells(input_row + 1, TICKER_COLUMN).Value <> Ticker Then
+                'Inputs
+                Closing_Price = Cells(input_row, CLOSING_PRICE_COLUMN).Value
+              
+                'Calculation
+                'Calculate the Yearly Change
+                Yearly_Change = Closing_Price - Opening_Price
+                'Calculate Percentage yearly change
+                Percentage_Change = Yearly_Change / Opening_Price
+                If Total_Stock_Volume > Greatest_Volume_Value Then
+                    Greatest_Volume_Value = Total_Stock_Volume
+                    Greatest_Volume_Ticker = Ticker
+                End If
+                
+                'Outputs
+                Range("I" & Output_Row).Value = Ticker
+                Range("J" & Output_Row).Value = Yearly_Change
+                If Yearly_Change < 0 Then
+                    Range("J" & Output_Row).Interior.ColorIndex = COLOUR_RED
+                Else
+                    Range("J" & Output_Row).Interior.ColorIndex = COLOUR_GREEN
+                End If
+                'Print the Percentage Change
+                Range("K" & Output_Row).Value = Format(Percentage_Change, "Percent")
+                'Print the Total Stock Volume
+                Range("L" & Output_Row).Value = Total_Stock_Volume
+                 
+                'Prepare for next Stock
+                'Add one to the Summary_Table_Row
+                'Reset the Total Stock Volume
+                Total_Stock_Volume = 0
+                Opening_Price = Cells(input_row + 1, OPENING_PRICE_COLUMN).Value
+                Output_Row = Output_Row + 1
+             
+            End If
+                
+        Next input_row
+         'Greatest Overall Output
+         Cells(4, 16).Value = Greatest_Volume_Ticker
+         Cells(4, 17).Value = Greatest_Volume_Value
+     Next ws
+End Sub
+
+
+
+
+
+
+
+
+
+
+
+
+
+
